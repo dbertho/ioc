@@ -56,8 +56,8 @@ jobs:
         
         new_entries = set()
         for result in data['results']:
-            if 'apexDomain' in result['task'] and 'time' in result['task']:
-                domain = result['task']['apexDomain']
+            if 'domain' in result['task'] and 'time' in result['task']:
+                domain = result['task']['domain']
                 date = datetime.strptime(result['task']['time'],'%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d')
                 if not re.match(ip_pattern, domain) and domain not in seen_domains:
                   new_entries.add((domain, date))
