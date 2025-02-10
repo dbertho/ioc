@@ -5,7 +5,7 @@ This repository contains collections of Indicators of Compromise (IOCs). The IOC
 ## Contents
 
 ### Sneaky2FA/WikiKit/Kratos Phishing Domains
-- `/sneaky2fa.csv`
+- [`/sneaky2fa.csv`](https://github.com/dbertho/ioc/blob/main/sneaky2fa.csv)
 - Collection of domains identified as hosting Sneaky2FA (also known as WikiKit or Kratos) phishing pages
 - Data sourced from reports and URLScan
 - Format: CSV (Donain name, Date of first detection)
