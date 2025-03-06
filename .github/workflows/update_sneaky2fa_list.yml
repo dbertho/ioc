@@ -73,10 +73,10 @@ jobs:
         
         EOF
 
-    - name: Commit changes
+    - name: Commit changes to sneaky2fa.csv
       run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
+        git config user.name dbertho
+        git config user.email david@bertho.fr
         git add sneaky2fa.csv
-        git diff-index --quiet HEAD || git commit -m "Update IOC list"
+        git diff-index --quiet HEAD || git commit -m "Update Sneaky2FA IOC list"
         git push
