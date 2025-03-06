@@ -74,10 +74,10 @@ jobs:
         
         EOF
 
-    - name: Commit changes
+    - name: Commit changes to clickfix_web3.csv
       run: |
-        git config user.name github-actions
-        git config user.email github-actions@github.com
+        git config user.name dbertho
+        git config user.email david@bertho.fr
         git add clickfix_web3.csv
-        git diff-index --quiet HEAD || git commit -m "Update IOC list"
+        git diff-index --quiet HEAD || git commit -m "Update ClickFix Web3 IOC list"
         git push
