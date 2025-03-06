@@ -1,0 +1,83 @@
+name: Update ClickFix Web3 Domains List
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '0 2 * * *'
+
+jobs:
+  update-domain-list:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+
+    - name: Fetch URLScan Domains
+      run: |
+        pip install requests
+        python3 << EOF
+        import requests
+        import json
+        import os
+        import csv
+        import re
+        from datetime import datetime
+
+        ip_pattern = r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$'
+        
+        url = "https://urlscan.io/api/v1/search"
+        params = {
+            "datasource": "scans",
+            "q": "meta:searchhit.search.6848bcb7-903f-46b1-9165-0cff75835a63"
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "API-Key": "${{ secrets.API_KEY }}"
+        }
+
+        response = requests.get('https://urlscan.io/api/v1/search', headers=headers, params=params)
+        data = response.json()
+
+        seen_domains = set()
+        filename = 'clickfix_web3.csv'
+
+        existing_entries = set()
+        if os.path.exists(filename):
+            with open(filename, 'r') as csvfile:
+                reader = csv.reader(csvfile)
+                next(reader, None)
+                for row in reader:
+                    if row:
+                        existing_entries.add((row[0], row[1]))
+                        seen_domains.add(row[0])
+        
+        new_entries = set()
+        for result in data['results']:
+            if 'domain' in result['task'] and 'time' in result['task']:
+                domain = result['task']['domain']
+                date = datetime.strptime(result['task']['time'],'%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d')
+                if not re.match(ip_pattern, domain) and domain not in seen_domains:
+                  new_entries.add((domain, date))
+                  seen_domains.add(domain)
+        
+        all_entries = sorted(existing_entries.union(new_entries))
+        
+        with open(filename, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Domain', 'DateScanned'])
+            writer.writerows(all_entries)
+        print(f"Added {len(new_entries)} new domains. Total domains: {len(all_entries)}")
+        
+        EOF
+
+    - name: Commit changes
+      run: |
+        git config user.name github-actions
+        git config user.email github-actions@github.com
+        git add clickfix_web3.csv
+        git diff-index --quiet HEAD || git commit -m "Update IOC list"
+        git push
