@@ -9,7 +9,7 @@ This repository contains collections of Indicators of Compromise (IOCs). The IOC
 - Collection of domains identified as hosting Sneaky2FA (also known as WikiKit or Kratos) phishing pages
 - Data sourced from reports and [URLScan](https://pro.urlscan.io/searches/1e0c7173-469d-43dd-be01-16e7b6426192)
 - Format: CSV (Domain name, Date of first detection)
-- Updated: Daily
+- Updated: Every 30 minutes
 
 ### ClickFix Web3 Phishing Domains
 - [`/clickfix_web3.csv`](https://github.com/dbertho/ioc/blob/main/clickfix_web3.csv)
