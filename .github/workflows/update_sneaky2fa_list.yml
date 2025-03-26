@@ -3,7 +3,7 @@ name: Update Sneaky2FA Domains List
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 2 * * *'
+    - cron: '*/30 * * * *'
 
 jobs:
   update-domain-list:
