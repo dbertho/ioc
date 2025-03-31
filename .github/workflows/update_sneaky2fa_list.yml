@@ -56,7 +56,7 @@ jobs:
         
         new_entries = set()
         for result in data['results']:
-            if 'domain' in result['page'] and 'time' in result['page']:
+            if 'domain' in result['page'] and 'time' in result['task']:
                 domain = result['page']['domain']
                 date = datetime.strptime(result['task']['time'],'%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d')
                 if not re.match(ip_pattern, domain) and domain not in seen_domains:
