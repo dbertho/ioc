@@ -1,0 +1,82 @@
+name: Update ExactHire Domains List
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/30 * * * *'
+
+jobs:
+  update-domain-list:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v3
+      with:
+        python-version: '3.9'
+
+    - name: Fetch URLScan Domains
+      run: |
+        pip install requests
+        python3 << EOF
+        import requests
+        import json
+        import os
+        import csv
+        import re
+        from datetime import datetime
+
+        ip_pattern = r'^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$'
+        
+        url = "https://urlscan.io/api/v1/search"
+        params = {
+            "datasource": "scans",
+            "q": "meta:searchhit.search.8a64af8f-7de5-47dc-94f3-73f23e34c486"
+        }
+        headers = {
+            "Content-Type": "application/json",
+            "API-Key": "${{ secrets.API_KEY }}"
+        }
+
+        response = requests.get('https://urlscan.io/api/v1/search', headers=headers, params=params)
+        data = response.json()
+
+        seen_domains = set()
+
+        existing_entries = set()
+        if os.path.exists('exacthire.csv'):
+            with open('exacthire.csv', 'r') as csvfile:
+                reader = csv.reader(csvfile)
+                next(reader, None)
+                for row in reader:
+                    if row:
+                        existing_entries.add((row[0], row[1]))
+                        seen_domains.add(row[0])
+        
+        new_entries = set()
+        for result in data['results']:
+            if 'domain' in result['page'] and 'time' in result['task']:
+                domain = result['page']['domain']
+                date = datetime.strptime(result['task']['time'],'%Y-%m-%dT%H:%M:%S.%fZ').strftime('%Y-%m-%d')
+                if not re.match(ip_pattern, domain) and domain not in seen_domains:
+                  new_entries.add((domain, date))
+                  seen_domains.add(domain)
+        
+        all_entries = sorted(existing_entries.union(new_entries))
+        
+        with open('exacthire.csv', 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            writer.writerow(['Domain', 'DateScanned'])
+            writer.writerows(all_entries)
+        print(f"Added {len(new_entries)} new domains. Total domains: {len(all_entries)}")
+        
+        EOF
+
+    - name: Commit changes to exacthire.csv
+      run: |
+        git config user.name dbertho
+        git config user.email david@bertho.fr
+        git add exacthire.csv
+        git diff-index --quiet HEAD || git commit -m "Update ExactHire IOC list"
+        git push
